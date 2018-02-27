@@ -24,10 +24,10 @@ This behavior can be turned off by setting `firebaseAuthenticationRequired` prop
 
 | Route | Query Params | Description | Response |
 |:-----:|:------------:|:------------|:---------|
-| /test | token | A simple route to test if the server is running and the authentication is working. | {everythingWorking: true} or [Error](#Error) |
-| /search | token, q | Searches for the given query in TheTVDB and returns the results with posters and thumbnails. | [SearchResult](#SearchResult)[] or [Error](#Error) |
-| /series | token, id | Hits multiple API routes of TheTVDB and returns all the data needed by the Angular app for the given series ID. | [Series](#Series) or [Error](#Error) |
-| /videos | token, q | Searches the DailyMotion API for the given query and returns results with thumbnails and URLs. | [VideosResult](#VideosResult)[] or [Error](#Error) |
+| /test | token | A simple route to test if the server is running and the authentication is working. | {everythingWorking: true} or [Error](#error) |
+| /search | token, q | Searches for the given query in TheTVDB and returns the results with posters and thumbnails. | [SearchResult](#searchresult)[] or [Error](#error) |
+| /series | token, id | Hits multiple API routes of TheTVDB and returns all the data needed by the Angular app for the given series ID. | [Series](#series) or [Error](#error) |
+| /videos | token, q | Searches the DailyMotion API for the given query and returns results with thumbnails and URLs. | [VideosResult](#videosresult)[] or [Error](#error) |
 
 ## Response Types
 
