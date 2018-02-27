@@ -1,0 +1,24 @@
+{
+  "name": "releasedates-backend-public",
+  "version": "1.0.0",
+  "description": "The backend server for the ReleaseDates.io Angular app.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramtinsoltani/releasedates-backend-public.git"
+  },
+  "author": "Ramtin Soltani",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ramtinsoltani/releasedates-backend-public/issues"
+  },
+  "homepage": "https://github.com/ramtinsoltani/releasedates-backend-public#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "firebase-admin": "^5.9.0",
+    "request": "^2.83.0"
+  }
+}
