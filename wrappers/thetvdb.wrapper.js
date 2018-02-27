@@ -136,7 +136,7 @@ let wrapper = {
 
             const promises = [];
 
-            for ( let index = 0; index <= totals.totalSeasons; index++ ) {
+            for ( let index = +totals.firstSeason; index <= totals.totalSeasons; index++ ) {
 
               promises.push(wrapper._getEpisodesBySeason(definition, index, id));
 
@@ -288,7 +288,8 @@ let wrapper = {
 
           resolve({
             totalSeasons: Math.max(...body.data.airedSeasons),
-            totalEpisodes: +body.data.airedEpisodes
+            totalEpisodes: +body.data.airedEpisodes,
+            firstSeason: Math.min(...body.data.airedSeasons)
           });
 
         }
