@@ -123,7 +123,8 @@ let wrapper = {
               airDate: body.data.airsDayOfWeek && body.data.airsTime ? `${body.data.airsDayOfWeek}s at ${body.data.airsTime}` : null,
               runtime: body.data.runtime,
               genre: body.data.genre,
-              posters: posters
+              posters: posters,
+              lastUpdated: body.data.lastUpdated
             };
 
             return wrapper._getTotalsById(definition, id);
@@ -163,6 +164,206 @@ let wrapper = {
             resolve(res);
 
           });
+
+        }
+
+      });
+
+    });
+
+  },
+
+  updates: (definition, id, since) => {
+
+    return new Promise((resolve, reject) => {
+
+      let lastUpdated;
+
+      const req = request.get({
+        url: `${definition.url}/series/${id}/filter?keys=lastUpdated`,
+        auth: {
+          bearer: definition.token
+        },
+        json: true
+      })
+      .on('response', (response) => {
+
+        lastUpdated = (new Date(response.headers['last-modified'])).getTime() / 1000;
+
+      })
+      .on('data', (body) => {
+
+        if ( body.Error ) {
+
+          reject();
+
+        }
+        else {
+
+          if ( lastUpdated <= since ) {
+
+            resolve({
+              hasUpdates: false
+            });
+
+            return;
+
+          }
+
+          wrapper._getTotalsById(definition, id)
+          .then((totals) => {
+
+            return wrapper._getEpisodesBySeason(definition, totals.totalSeasons, id);
+
+          })
+          .then((season) => {
+
+            resolve({
+              hasUpdates: true,
+              lastUpdated: lastUpdated,
+              episodes: season.episodes.map((episode) => { return { number: episode.number, hasName: !! episode.name, airDate: episode.airDate }; })
+            });
+
+          })
+          .catch(() => {
+
+            reject();
+
+          });
+
+        }
+
+      })
+      .on('error', () => {
+
+        reject();
+
+      });
+
+    });
+
+  },
+
+  discover: (definition, count) => {
+
+    return new Promise((resolve, reject) => {
+
+      const rightnow = new Date();
+      const lastWeek = new Date(rightnow.getFullYear(), rightnow.getMonth(), rightnow.getDate() - 7);
+      const since = lastWeek.getTime() / 1000;
+
+      request.get({
+        url: `${definition.url}/updated/query?fromTime=${since}`,
+        auth: {
+          bearer: definition.token
+        },
+        json: true
+      }, (error, response, body) => {
+
+        if ( error || body.Error ) {
+
+          reject();
+
+        }
+        else {
+
+          const picked = wrapper._pickRandom(body.data, count);
+          const promises = [];
+
+          for ( const series of picked ) {
+
+            promises.push(wrapper._getDiscoverData(definition, series.id));
+
+          }
+
+          Promise.all(promises)
+          .then((data) => {
+
+            resolve(data);
+
+          })
+          .catch(() => {
+
+            reject();
+
+          });
+
+        }
+
+      });
+
+    });
+
+  },
+
+  _pickRandom: (array, count) => {
+
+    const picked = [];
+
+    for ( let index = 0; index < count; index++ ) {
+
+      if ( ! array.length ) break;
+
+      picked.push(array.splice(Math.floor(Math.random() * array.length), 1)[0]);
+
+    }
+
+    return picked;
+
+  },
+
+  _getDiscoverData: (definition, id) => {
+
+    return new Promise((resolve, reject) => {
+
+      const res = {};
+
+      wrapper._getSeriesName(definition, id)
+      .then((name) => {
+
+        res.id = id;
+        res.name = name;
+
+        return wrapper._getPostersById(definition, id);
+
+      })
+      .then((posters) => {
+
+        res.posters = posters;
+
+        resolve(res);
+
+      })
+      .catch(() => {
+
+        reject();
+
+      });
+
+    });
+
+  },
+
+  _getSeriesName: (definition, id) => {
+
+    return new Promise((resolve, reject) => {
+
+      request.get({
+        url: `${definition.url}/series/${id}/filter?keys=seriesName`,
+        auth: {
+          bearer: definition.token
+        },
+        json: true
+      }, (error, response, body) => {
+
+        if ( error || body.Error ) {
+
+          resolve(null);
+
+        }
+        else {
+
+          resolve(body.data.seriesName);
 
         }
 
@@ -281,7 +482,7 @@ let wrapper = {
 
         if ( error || body.Error ) {
 
-          reject();
+          resolve(null);
 
         }
         else {

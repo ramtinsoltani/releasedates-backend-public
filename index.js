@@ -27,6 +27,33 @@ app.use((req, res, next) => {
 // Signature check
 app.use((req, res, next) => {
 
+  let corruptQueries = false;
+
+  for ( const queryName in req.query ) {
+
+    if ( typeof req.query[queryName] !== "string" ) {
+
+      corruptQueries = true;
+      break;
+
+    }
+
+  }
+
+  if ( corruptQueries ) {
+
+    // Reject (Corrupt parameters)
+    res
+    .status(405)
+    .json({
+      error: true,
+      message: "Queries are corrupt!"
+    });
+
+    return;
+
+  }
+
   if ( (! req.query.token || ! req.query.token.trim()) && config.firebaseAuthenticationRequired ) {
 
     // Reject (Missing parameter)
@@ -62,7 +89,7 @@ app.use((req, res, next) => {
   }
   else if ( req.path === '/series' ) {
 
-    if ( ! req.query.id || ! req.query.id.trim() ) {
+    if ( ! req.query.id || ! req.query.id.trim() || isNaN(req.query.id.trim()) ) {
 
       // Reject (Missing parameters)
       res
@@ -92,6 +119,37 @@ app.use((req, res, next) => {
       });
 
       return;
+
+    }
+
+    next();
+
+  }
+  else if ( req.path === '/updates' ) {
+
+    if ( ! req.query.id || ! req.query.id.trim() || isNaN(req.query.id.trim()) || ! req.query.since || ! req.query.since.trim() || isNaN(req.query.since.trim()) ) {
+
+      // Reject (Missing parameters)
+      res
+      .status(405)
+      .json({
+        error: true,
+        message: "The 'id' and 'since' parameters must be present and valid for this route!"
+      });
+
+      return;
+
+    }
+
+    next();
+
+  }
+  else if ( req.path === '/discover' ) {
+
+    if ( ! req.query.count || ! req.query.count.trim() || isNaN(req.query.count.trim()) || +req.query.count.trim() > 100 || +req.query.count.trim() < 1 ) {
+
+      // Adjust (Default parameters used)
+      req.query.count = "20";
 
     }
 
@@ -152,7 +210,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
 
   if (
-    ( req.path === '/search' || req.path === '/series' ) &&
+    ( req.path === '/search' || req.path === '/series' || req.path === '/updates' || req.path === '/discover' ) &&
     ( ! config.thetvdb.token || (Date.now() - config.thetvdb.lastTokenRefreshTimestamp) > config.thetvdb.tokenRefreshTime )
   ) {
 
@@ -218,6 +276,48 @@ app.get('/series', (req, res) => {
 app.get('/search', (req, res) => {
 
   config.thetvdb.wrapper.search(config.thetvdb, req.query.q.trim())
+  .then((response) => {
+
+    res.json(response);
+
+  })
+  .catch(() => {
+
+    res
+    .status(520)
+    .json({
+      error: true,
+      message: 'An unknown error has occurred!'
+    });
+
+  });
+
+});
+
+app.get('/updates', (req, res) => {
+
+  config.thetvdb.wrapper.updates(config.thetvdb, +req.query.id.trim(), +req.query.since.trim())
+  .then((response) => {
+
+    res.json(response);
+
+  })
+  .catch(() => {
+
+    res
+    .status(520)
+    .json({
+      error: true,
+      message: 'An unknown error has occurred!'
+    });
+
+  });
+
+});
+
+app.get('/discover', (req, res) => {
+
+  config.thetvdb.wrapper.discover(config.thetvdb, +req.query.count)
   .then((response) => {
 
     res.json(response);

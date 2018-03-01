@@ -28,6 +28,8 @@ This behavior can be turned off by setting `firebaseAuthenticationRequired` prop
 | /search | token, q | Searches for the given query in TheTVDB and returns the results with posters and thumbnails. | [SearchResult](#searchresult)[] or [Error](#error) |
 | /series | token, id | Hits multiple API routes of TheTVDB and returns all the data needed by the Angular app for the given series ID. | [Series](#series) or [Error](#error) |
 | /videos | token, q | Searches the DailyMotion API for the given query and returns results with thumbnails and URLs. | [VideosResult](#videosresult)[] or [Error](#error) |
+| /updates | token, id, since | Gets updates for the given series since the given Epoch time. | [Update](#update) or [Error](#error) |
+| /discover | token, *[count]* | Randomly picks from the most recently updated series within the last week. The count query determines how many series to pick and must be between 1 to 100. If not provided or invalid, this value defaults to 20. Keep in mind that some discovered series can lack name and posters! | [Discovered[]](#discovered) or [Error](#error) |
 
 ## Response Types
 
@@ -84,6 +86,33 @@ This behavior can be turned off by setting `firebaseAuthenticationRequired` prop
   "duration": "",
   "url": "",
   "thumbnail": ""
+}
+```
+
+### Update
+
+```json
+{
+  "hasUpdates": true,
+  "lastUpdated": 0,
+  "episodes": [{
+    "number": 0,
+    "hasName": true,
+    "airDate": 0
+  }]
+}
+```
+
+### Discovered
+
+```json
+{
+  "name": "",
+  "id": 0,
+  "posters": [{
+    "poster": "",
+    "thumbnail": ""
+  }]
 }
 ```
 
