@@ -37,10 +37,7 @@ let wrapper = {
           item.thumbnail = item.thumbnail_url;
           delete item.thumbnail_url;
 
-          const minutes = Math.floor(item.duration / 60);
-          const seconds = item.duration % 60;
-
-          item.duration = `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+          item.duration = wrapper._formatTime(item.duration);
 
           return item;
 
@@ -49,6 +46,28 @@ let wrapper = {
       });
 
     });
+
+  },
+
+  _formatTime: (duration) => {
+
+    let seconds, minutes, hours, time = [];
+
+    seconds = duration;
+    minutes = Math.floor(seconds / 60);
+    seconds %= 60;
+    hours = Math.floor(minutes / 60);
+    minutes %= 60;
+
+    if ( hours < 10 ) hours = '0' + hours;
+    if ( minutes < 10 ) minutes = '0' + minutes;
+    if ( seconds < 10 ) seconds = '0' + seconds;
+
+    if ( +hours ) time.push(hours);
+    time.push(minutes);
+    time.push(seconds);
+
+    return time.join(':');
 
   }
 
